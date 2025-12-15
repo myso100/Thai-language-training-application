@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duolingo Style Lesson - Graded</title>
+    <style>
+        /* --- CSS STYLING (Dark Mode Theme) --- */
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #131F24;
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            gap: 15px;
+        }
+
+        .close-btn { 
+            font-size: 24px; 
+            color: #52656d; 
+            cursor: pointer; 
+            text-decoration: none; /* In case we use <a> tag later */
+        }
+        
+        .close-btn:hover {
+            color: #aebdc3; /* Lighten on hover */
+        }
+        
+        .progress-container {
+            flex-grow: 1;
+            height: 16px;
+            background-color: #37464F;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #58CC02;
+            transition: width 0.5s ease;
+        }
+
+        .hearts { color: #FF4B4B; font-weight: bold; }
+
+        /* Main Content */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h2 { margin-bottom: 40px; text-align: center; }
+
+        /* Card Grid */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .option-card {
+            background-color: #131F24;
+            border: 2px solid #37464F;
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-card:hover { background-color: #1f2f36; }
+
+        .option-card.selected {
+            background-color: #1f3a46;
+            border-color: #49C0F8;
+        }
+
+        .option-image { font-size: 60px; display: block; margin-bottom: 10px; }
+        .option-text { font-size: 18px; color: #aebdc3; }
+        .option-number {
+            position: absolute; top: 10px; right: 10px;
+            border: 1px solid #37464F; color: #37464F;
+            border-radius: 5px; padding: 2px 6px; font-size: 12px;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 2px solid #37464F;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #131F24;
+        }
+
+        .feedback-area {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            padding: 20px;
+            color: #131F24;
+            z-index: 10;
+        }
+
+        .feedback-area.correct { background-color: #d7ffb8; color: #58a700; }
+        .feedback-area.wrong { background-color: #ffdfe0; color: #ea2b2b; }
+
+        .btn {
+            background-color: #58CC02;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            max-width: 150px;
+            box-shadow: 0 4px 0 #46a302;
+        }
+        
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn:disabled { background-color: #37464F; box-shadow: none; color: #52656d; cursor: not-allowed;}
+
+        /* Result Screen Styles */
+        #result-screen { display: none; text-align: center; }
+        
+        #final-score {
+            font-size: 48px;
+            color: #FFC800; /* Gold color */
+            margin: 20px 0;
+            font-weight: 800;
+        }
+
+        #final-message {
+            font-size: 24px;
+            color: #aebdc3;
+            margin-bottom: 30px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="close-btn" onclick="window.location.href='welcome.html'">✕</div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="hearts">❤️ 5</div>
+    </header>
+
+    <main id="game-area">
+        <h2 id="question-text">Loading...</h2>
+        <div class="options-grid" id="options-container"></div>
+    </main>
+
+    <main id="result-screen">
+        <h1>Lesson Complete! 🎉</h1>
+        
+        <div id="final-score">0 / 0</div>
+        <div id="final-message">Loading result...</div>
+
+        <button class="btn" onclick="window.location.href='welcome.html'">Continue</button>
+    </main>
+
+    <footer id="footer">
+        <div style="flex-grow: 1;"></div>
+        <button class="btn" id="check-btn" disabled>CHECK</button>
+    </footer>
+
+    <div id="feedback-popup" class="feedback-area">
+        <div style="max-width: 600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="font-weight: 800; font-size: 24px; margin-bottom: 5px;" id="feedback-title">Amazing!</div>
+                <div id="feedback-detail"></div>
+            </div>
+            <button class="btn" id="continue-btn">CONTINUE</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const questions = [
+            {
+                question: 'Which one of these is "the man"?',
+                correctIndex: 1,
+                options: [
+                    { text: 'le garçon', emoji: '👦' },
+                    { text: "l'homme", emoji: '👨' },
+                    { text: 'le chat', emoji: '🐈' }
+                ]
+            },
+            {
+                question: 'Which one of these is "the woman"?',
+                correctIndex: 1,
+                options: [
+                    { text: 'le chien', emoji: '🐕' },
+                    { text: "la femme", emoji: '👩' },
+                    { text: 'le garçon', emoji: '👦' }
+                ]
+            },
+            {
+                question: 'Which one of these is "the boy"?',
+                correctIndex: 0,
+                options: [
+                    { text: 'le garçon', emoji: '👦' },
+                    { text: 'le chat', emoji: '🐈' },
+                    { text: 'la pizza', emoji: '🍕' }
+                ]
+            },
+            {
+                question: 'Which one of these is "the cat"?',
+                correctIndex: 1,
+                options: [
+                    { text: "l'homme", emoji: '👨' },
+                    { text: 'le chat', emoji: '🐈' },
+                    { text: 'la fille', emoji: '👧' }
+                ]
+            },
+            {
+                question: 'Which one of these is "the girl"?',
+                correctIndex: 0,
+                options: [
+                    { text: 'la fille', emoji: '👧' },
+                    { text: 'le chien', emoji: '🐕' },
+                    { text: "l'homme", emoji: '👨' }
+                ]
+            }
+        ];
+
+        // --- STATE VARIABLES ---
+        let currentQuestion = 0;
+        let selectedOption = null;
+        let score = 0;
+
+        // --- DOM ELEMENTS ---
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressBar = document.getElementById('progress-bar');
+        const checkBtn = document.getElementById('check-btn');
+        const footer = document.getElementById('footer');
+        const feedbackPopup = document.getElementById('feedback-popup');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackDetail = document.getElementById('feedback-detail');
+        const continueBtn = document.getElementById('continue-btn');
+        const gameArea = document.getElementById('game-area');
+        const resultScreen = document.getElementById('result-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const finalMessageEl = document.getElementById('final-message');
+
+        // --- FUNCTIONS ---
+
+        function loadQuestion() {
+            selectedOption = null;
+            checkBtn.disabled = true;
+            feedbackPopup.style.display = 'none';
+            footer.style.display = 'flex';
+            optionsContainer.innerHTML = '';
+
+            const data = questions[currentQuestion];
+            questionText.innerText = data.question;
+
+            // Update Progress Bar
+            const progress = (currentQuestion / questions.length) * 100;
+            progressBar.style.width = progress + '%';
+
+            data.options.forEach((opt, index) => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.innerHTML = `
+                    <span class="option-number">${index + 1}</span>
+                    <span class="option-image">${opt.emoji}</span>
+                    <span class="option-text">${opt.text}</span>
+                `;
+                card.onclick = () => selectCard(index, card);
+                optionsContainer.appendChild(card);
+            });
+        }
+
+        function selectCard(index, cardElement) {
+            const cards = document.querySelectorAll('.option-card');
+            cards.forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            selectedOption = index;
+            checkBtn.disabled = false;
+        }
+
+        checkBtn.onclick = () => {
+            const data = questions[currentQuestion];
+            const isCorrect = selectedOption === data.correctIndex;
+
+            footer.style.display = 'none';
+            feedbackPopup.style.display = 'block';
+
+            if (isCorrect) {
+                score++; 
+                feedbackPopup.className = 'feedback-area correct';
+                feedbackTitle.innerText = "Amazing!";
+                feedbackTitle.style.color = '#58a700';
+                feedbackDetail.innerText = "";
+                continueBtn.style.backgroundColor = '#58CC02';
+                continueBtn.style.boxShadow = '0 4px 0 #46a302';
+            } else {
+                feedbackPopup.className = 'feedback-area wrong';
+                feedbackTitle.innerText = "Correct answer:";
+                feedbackTitle.style.color = '#ea2b2b';
+                feedbackDetail.innerText = data.options[data.correctIndex].text;
+                continueBtn.style.backgroundColor = '#FF4B4B';
+                continueBtn.style.boxShadow = '0 4px 0 #ea2b2b';
+            }
+        };
+
+        continueBtn.onclick = () => {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                finishLesson();
+            }
+        };
+
+        function finishLesson() {
+            progressBar.style.width = '100%';
+            gameArea.style.display = 'none';
+            footer.style.display = 'none';
+            feedbackPopup.style.display = 'none';
+            resultScreen.style.display = 'block';
+
+            // DISPLAY SCORE
+            finalScoreEl.innerText = `Score: ${score} / ${questions.length}`;
+
+            if (score === questions.length) {
+                finalMessageEl.innerText = "Perfect Score! You are a genius! 🌟";
+            } else if (score >= 3) {
+                finalMessageEl.innerText = "Good job! Keep going! 👍";
+            } else {
+                finalMessageEl.innerText = "Don't give up! Practice makes perfect. 💪";
+            }
+        }
+
+        // Start
+        loadQuestion();
+
+    </script>
+</body>
+</html>

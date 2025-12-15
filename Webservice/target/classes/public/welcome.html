@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Learning Path</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #fff; }
+        
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 250px; border-right: 2px solid #e5e5e5; height: 100vh;
+            position: fixed; padding: 20px; background: white; z-index: 1000;
+        }
+        .nav-item {
+            display: flex; align-items: center; padding: 10px 15px; margin-bottom: 5px;
+            border-radius: 12px; color: #777; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px;
+        }
+        .nav-item:hover { background-color: #f7f7f7; }
+        .nav-item.active { color: #1cb0f6; background-color: #ddf4ff; border: 2px solid #84d8ff; }
+        
+        /* --- Main Content --- */
+        .main-content { margin-left: 250px; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+
+        /* --- Header --- */
+        .unit-header {
+            background-color: #58cc02;
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 0 #46a302;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Consonant Grid --- */
+        .drill-container {
+            width: 100%;
+            max-width: 600px;
+            background: #fdfdfd;
+            border: 2px solid #e5e5e5;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            padding: 30px 20px;
+            margin-top: -15px;
+            margin-bottom: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .tile {
+            width: 50px; height: 55px; background-color: white;
+            border: 1px solid #e5e5e5; border-bottom: 4px solid #e5e5e5;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; color: #4b4b4b; cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); user-select: none;
+        }
+        .tile:hover { transform: translateY(-2px); background-color: #f0faff; border-color: #1cb0f6; color: #1cb0f6; }
+        .tile:active { transform: translateY(2px); border-bottom-width: 0px; margin-top: 4px; }
+        .tile.special { color: #ce82ff; }
+        .tile.special:hover { border-color: #ce82ff; background-color: #fcf4ff; }
+
+        /* --- NEW: CHALLENGE BUTTON --- */
+        .challenge-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-challenge {
+            background-color: #ffc800; /* Gold Color */
+            color: #4b4b4b;
+            border: 2px solid #e5b400;
+            border-bottom: 6px solid #e5b400; /* Deep 3D effect */
+            border-radius: 20px;
+            padding: 20px 40px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            animation: pulse-gold 2s infinite; /* Subtle pulse */
+        }
+        
+        .btn-challenge:hover {
+            background-color: #ffd233;
+            filter: brightness(1.05);
+        }
+
+        .btn-challenge:active {
+            transform: translateY(6px);
+            border-bottom-width: 0px;
+            margin-top: 6px;
+            margin-bottom: -6px; /* Keep layout stable */
+            animation: none;
+        }
+
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 0 0 rgba(255, 200, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 200, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 200, 0, 0); }
+        }
+
+        /* --- Path Circles --- */
+        .unit-circle {
+            width: 70px; height: 70px; background-color: #58cc02; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 30px;
+            color: white; box-shadow: 0 6px 0 #46a302; margin: 15px 0; cursor: pointer;
+            transition: transform 0.1s; position: relative; z-index: 2;
+        }
+        .unit-circle:active { transform: translateY(6px); box-shadow: none; }
+        .unit-circle.locked { background-color: #e5e5e5; box-shadow: 0 6px 0 #cecece; color: #afafaf; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar d-none d-md-block">
+        <h2 class="text-success fw-bold mb-5 ps-2" style="letter-spacing: -1px;">duolingo</h2>
+        <div class="nav-item active">🏠 Learn</div>
+        <div class="nav-item">🗣️ Sounds</div>
+        <div class="nav-item">🛡️ Leaderboard</div>
+        <div class="nav-item">🛍️ Shop</div>
+        
+        <div class="mt-5 pt-5">
+            <button onclick="logout()" class="btn btn-outline-danger w-100 fw-bold rounded-pill">LOGOUT</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="unit-header text-center">
+            <h4 class="m-0 fw-bold">Unit 1: Intro to French</h4>
+            <p class="m-0 small opacity-75">Master the basics & sounds</p>
+        </div>
+
+        <div class="drill-container">
+            <p class="w-100 text-center text-muted small fw-bold mb-3 text-uppercase" style="letter-spacing: 1px;">Tap to listen</p>
+            <div class="tile" onclick="speak('Bé', 'B')">B</div>
+            <div class="tile" onclick="speak('Cé', 'C')">C</div>
+            <div class="tile" onclick="speak('Dé', 'D')">D</div>
+            <div class="tile" onclick="speak('Fff', 'F')">F</div>
+            <div class="tile" onclick="speak('Jé', 'G')">G</div>
+            <div class="tile" onclick="speak('Hache', 'H')">H</div>
+            <div class="tile" onclick="speak('Ji', 'J')">J</div>
+            <div class="tile" onclick="speak('Ka', 'K')">K</div>
+            <div class="tile" onclick="speak('Ell', 'L')">L</div>
+            <div class="tile" onclick="speak('Emm', 'M')">M</div>
+            <div class="tile" onclick="speak('Enn', 'N')">N</div>
+            <div class="tile" onclick="speak('Pé', 'P')">P</div>
+            <div class="tile" onclick="speak('Ku', 'Q')">Q</div>
+            <div class="tile" onclick="speak('Airr', 'R')">R</div>
+            <div class="tile" onclick="speak('Ess', 'S')">S</div>
+            <div class="tile" onclick="speak('Té', 'T')">T</div>
+            <div class="tile" onclick="speak('Vay', 'V')">V</div>
+            <div class="tile" onclick="speak('Double vay', 'W')">W</div>
+            <div class="tile" onclick="speak('Iks', 'X')">X</div>
+            <div class="tile" onclick="speak('Zède', 'Z')">Z</div>
+            <div class="w-100"></div> 
+            <div class="tile special" onclick="speak('Che', 'CH')">CH</div>
+            <div class="tile special" onclick="speak('Gne', 'GN')">GN</div>
+            <div class="tile special" onclick="speak('Fff', 'PH')">PH</div>
+            <div class="tile special" onclick="speak('Ke', 'QU')">QU</div>
+        </div>
+
+        <div class="challenge-container">
+            <button class="btn-challenge" onclick="window.location.href='lesson.html'">
+                <span style="font-size: 24px;">📝</span> 
+                Let's test what you have learnt so far
+            </button>
+        </div>
+
+        <div id="learningPath" class="d-flex flex-column align-items-center w-100">
+            </div>
+    </div>
+
+    <script>
+        // --- SPEECH ENGINE ---
+        function speak(pronunciation, display) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(pronunciation);
+                utterance.lang = 'fr-FR'; 
+                utterance.rate = 0.9; 
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- AUTH ---
+        const token = localStorage.getItem('token');
+        if(!token) window.location.href = 'login.html';
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // --- PATH LOADING LOGIC ---
+        async function loadPath() {
+            try {
+                const res = await fetch('http://localhost:8080/progress');
+                const data = await res.json();
+                const container = document.getElementById('learningPath');
+                container.innerHTML = '';
+
+                data.units.forEach((unit, index) => {
+                    // Zig Zag Logic
+                    const offset = (index % 2 === 0) ? '-40px' : '40px'; 
+                    
+                    const el = document.createElement('div');
+                    const isLockedString = unit.status === 'locked' ? 'locked' : '';
+                    
+                    el.className = `unit-circle ${isLockedString}`;
+                    el.style.marginLeft = offset;
+                    el.innerHTML = unit.icon;
+                    
+                    // Click handler (Only first unit or Active units work)
+                    el.onclick = () => { 
+                        if(unit.status === 'active' || index === 0) {
+                            window.location.href = 'lesson.html';
+                        } else if (unit.status === 'locked') {
+                            alert("Complete the test above to unlock this!");
+                        }
+                    };
+                    
+                    container.appendChild(el);
+                });
+            } catch(e) { console.error(e); }
+        }
+        
+        loadPath();
+    </script>
+</body>
+</html>
